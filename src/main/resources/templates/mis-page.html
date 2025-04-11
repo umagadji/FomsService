@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Работа с МИС</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><a href="/insurance"><img src="/images/logo.svg"/></a></div>
+  <div class="title"><h2>Работа с МИС</h2></div>
+  <div class="mainmenu">
+    <nav>
+      <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}">Главная</a>
+      <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}">Работа с МЭК</a>
+      <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}">Работа с МИС</a>
+    </nav>
+  </div>
+</div>
+
+<div class="container">
+  <div class="sidebar">
+    <form id="load-data-form">
+      <label>Дата с:
+        <input type="date" name="startDate" required th:value="${startDate}">
+      </label>
+      <label>по:
+        <input type="date" name="endDate" required th:value="${endDate}">
+      </label>
+      <button type="submit">Загрузить данные</button>
+    </form>
+  </div>
+
+  <div class="result">
+    <div class="actions_wrapper">
+      <div class="actions" th:if="${items != null and items.size() > 0}">
+        <button class="btn_enp_request" onclick="submitPackage('enp')">Пакетный запрос по полисам</button>
+        <button class="btn_fio_request" onclick="submitPackage('fio')">Пакетный запрос по ФИО</button>
+      </div>
+      <div class="actions_download">
+        <button class="btn_download_response" id="download-btn" style="display: none;" onclick="downloadFile()">Скачать ответ</button>
+      </div>
+    </div>
+
+    <div class="table_wrapper">
+      <table id="request_items">
+        <thead>
+        <tr>
+          <th>Полис</th>
+          <th>Фамилия</th>
+          <th>Имя</th>
+          <th>Отчество</th>
+          <th>Дата рождения</th>
+          <th>Date_in</th>
+          <th>Date_out</th>
+          <th>Отделение</th>
+          <th>Комментарий</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+          <td th:text="${item.npolis}"></td>
+          <td th:text="${item.fam}"></td>
+          <td th:text="${item.im}"></td>
+          <td th:text="${item.ot}"></td>
+          <td th:text="${item.birthDate}"></td>
+          <td th:text="${item.date_in}"></td>
+          <td th:text="${item.date_out}"></td>
+          <td th:text="${item.nameMO}"></td>
+          <td th:text="${item.s_com}"></td>
+        </tr>
+        </tbody>
+      </table>
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div> Загружается...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function submitPackage(type) {
+    // Показываем индикатор загрузки
+    document.getElementById('loading-overlay').style.display = 'block';
+
+    const formData = new FormData();
+    formData.append('type', type);
+    formData.append('startDate', document.querySelector('input[name="startDate"]').value);
+    formData.append('endDate', document.querySelector('input[name="endDate"]').value);
+
+    // Создаем запрос с использованием Fetch API (AJAX)
+    fetch('/mis/package-query', {
+      method: 'POST',
+      body: formData
+    })
+            .then(response => response.json())  // Преобразуем ответ в JSON
+            .then(data => {
+              document.getElementById('loading-overlay').style.display = 'none'; // Скрываем индикатор загрузки
+
+              if (data.hasData) {
+                // Если есть данные для скачивания, показываем кнопку
+                document.getElementById('download-btn').style.display = 'inline-block';
+              }
+            })
+            .catch(error => {
+              document.getElementById('loading-overlay').style.display = 'none';  // Скрываем индикатор загрузки в случае ошибки
+              console.error('Error:', error);
+            });
+  }
+
+  function downloadFile() {
+    // Инициализируем скачивание файла
+    window.location.href = "/mis/downloadFile";
+  }
+</script>
+
+</body>
+</html>

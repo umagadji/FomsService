@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Страхование</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="header">
+    <div class="logo"><a href="/insurance"><img src="/images/logo.svg"/></a></div>
+    <div class="title"><h2>Поиск информации</h2></div>
+    <div class="mainmenu">
+        <nav>
+            <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}">Главная</a>
+            <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}">Работа с МЭК</a>
+            <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}">Работа с МИС</a>
+        </nav>
+    </div>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <form id="insuranceForm" th:action="@{/insurance/submit}" th:object="${insuranceRequest}" method="post">
+            <input type="hidden" name="requestId" th:value="1"> <!-- requestId всегда 1 -->
+
+            <details open>
+                <summary>Поиск по ЕНП</summary>
+                <input type="hidden" name="stype" value="1">
+                <input placeholder="ЕНП (16 символов)" type="text" name="enp">
+            </details>
+
+            <details>
+                <summary>Поиск по ФИО и ДР</summary>
+                <input type="hidden" name="stype" value="2">
+                <input placeholder="Фамилия" type="text" name="fam">
+                <input placeholder="Имя" type="text" name="im">
+                <input placeholder="Отчество" type="text" name="ot">
+                <input type="date" name="dr">
+            </details>
+
+            <details>
+                <summary>Поиск по ДУЛ</summary>
+                <input type="hidden" name="stype" value="3">
+                <select name="doctype" required>
+                    <option value="">Выберите тип</option>
+                    <option value="1">Паспорт гражданина СССР</option>
+                    <option value="2">Загранпаспорт гражданина СССР</option>
+                    <option value="3">Свидетельство о рождении, выданное в Российской Федерации</option>
+                    <option value="4">Удостоверение личности офицера</option>
+                    <option value="5">Справка об освобождении из места лишения свободы</option>
+                    <option value="6">Паспорт Минморфлота</option>
+                    <option value="7">Военный билет</option>
+                    <option value="8">Дипломатический паспорт гражданина Российской Федерации</option>
+                    <option value="9">Паспорт иностранного гражданина</option>
+                    <option value="10">Свидетельство о рассмотрении ходатайства о признании иммигранта беженцем на территории Российской Федерации</option>
+                    <option value="11">Вид на жительство</option>
+                    <option value="12">Удостоверение беженца в Российской Федерации</option>
+                    <option value="13">Временное удостоверение личности гражданина Российской Федерации</option>
+                    <option value="14" selected>Паспорт гражданина Российской Федерации</option>
+                    <option value="15">Заграничный паспорт гражданина Российской Федерации</option>
+                    <option value="16">Паспорт моряка</option>
+                    <option value="17">Военный билет офицера запаса</option>
+                    <option value="18">Иные документы</option>
+                    <option value="21">Документ иностранного гражданина</option>
+                    <option value="22">Документ лица без гражданства</option>
+                    <option value="23">Разрешение на временное проживание</option>
+                    <option value="24">Свидетельство о рождении, выданное не в Российской Федерации</option>
+                    <option value="25">Свидетельство о предоставлении временного убежища на территории Российской Федерации</option>
+                    <option value="26">Удостоверение сотрудника Евразийской</option>
+                    <option value="27">Копия жалобы о лишении статуса беженца</option>
+                    <option value="28">Иной документ, соответствующий свидетельству о предоставлении убежища на территории Российской Федерации</option>
+                    <option value="29">Трудовой договор</option>
+                </select>
+                <input placeholder="Серия (XX XX)" type="text" name="docser">
+                <input placeholder="Номер" type="text" name="docnum">
+            </details>
+
+            <button type="submit">Найти</button>
+
+            <div class="colors_info">
+                <span class="police_active">Полис активен</span>
+                <span class="police_inactive">Полис неактивен</span>
+                <span class="police_other">Другой полис</span>
+                <span class="police_no_data">Нет данных</span>
+                <span class="police_inogor">Иногородний</span>
+            </div>
+        </form>
+    </div>
+
+    <div class="result">
+        <h3>Результат:</h3>
+        <div id="responseContainer">
+            Нет данных
+        </div>
+    </div>
+</div>
+
+<!-- Скрипт для формирования запроса -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector("#insuranceForm");
+        const detailsElements = document.querySelectorAll("details");
+
+        detailsElements.forEach(details => {
+            details.addEventListener("toggle", function () {
+                if (this.open) {
+                    detailsElements.forEach(otherDetails => {
+                        if (otherDetails !== this) {
+                            otherDetails.open = false;
+                        }
+                    });
+                }
+            });
+        });
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Сброс контейнера с результатами
+            const responseContainer = document.querySelector("#responseContainer");
+            responseContainer.innerHTML = "Нет данных";
+            responseContainer.className = ""; // Убираем все классы
+
+            const activeDetails = document.querySelector("details[open]");
+            if (!activeDetails) {
+                alert("Выберите один из способов поиска!");
+                return;
+            }
+
+            let requestData = {
+                requestId: 1, // requestId всегда передаётся
+                stype: parseInt(activeDetails.querySelector("input[name='stype']").value) // stype передаётся всегда
+            };
+
+            // Заполняем requestData только если поле заполнено
+            const addIfNotEmpty = (name, value) => {
+                if (value && value.trim() !== "") {
+                    requestData[name] = value.trim();
+                }
+            };
+
+            if (requestData.stype === 1) {
+                const enpInput = activeDetails.querySelector("input[name='enp']");
+                if (!/^\d{16}$/.test(enpInput.value)) {
+                    alert("ЕНП должен содержать ровно 16 цифр!");
+                    return;
+                }
+                addIfNotEmpty("enp", enpInput.value);
+            } else if (requestData.stype === 2) {
+                addIfNotEmpty("fam", activeDetails.querySelector("input[name='fam']").value);
+                addIfNotEmpty("im", activeDetails.querySelector("input[name='im']").value);
+                addIfNotEmpty("ot", activeDetails.querySelector("input[name='ot']").value);
+                addIfNotEmpty("dr", activeDetails.querySelector("input[name='dr']").value);
+            } else if (requestData.stype === 3) {
+                addIfNotEmpty("doctype", activeDetails.querySelector("select[name='doctype']").value);
+                addIfNotEmpty("docser", activeDetails.querySelector("input[name='docser']").value);
+                addIfNotEmpty("docnum", activeDetails.querySelector("input[name='docnum']").value);
+            }
+
+            console.log("Отправляем JSON:", requestData); // Проверяем JSON перед отправкой
+
+            // Вызов функции для отправки запроса на сервер
+            sendRequest(requestData);
+        });
+    });
+
+    // Функция для отправки запроса на сервер
+    function sendRequest(requestData) {
+        fetch('/insurance/submit', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData)
+        })
+            .then(async response => {
+                // Пытаемся прочитать ответ как текст в любом случае
+                const responseText = await response.text();
+
+                // Обработка пустого ответа (204 No Content)
+                if (response.status === 204) {
+                    displayResponse(null);
+                    return;
+                }
+
+                // Пытаемся парсить JSON только если есть содержимое
+                let responseData;
+                if (responseText) {
+                    try {
+                        responseData = JSON.parse(responseText);
+                    } catch (e) {
+                        // Если не JSON, используем текст как есть
+                        responseData = responseText;
+                    }
+                }
+
+                // Обработка ошибок
+                if (!response.ok) {
+                    let errorMessage = "Ошибка в ответе сервера";
+
+                    if (responseData) {
+                        if (typeof responseData === 'object') {
+                            errorMessage = responseData.message || "Ошибка в данных";
+                        } else {
+                            errorMessage = responseData;
+                        }
+                    } else {
+                        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+
+                    throw new Error(errorMessage);
+                }
+
+                // Если ответ успешный и есть данные
+                if (responseData) {
+                    displayResponse(responseData);
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка запроса:", error);
+                displayError(error.message.includes("Unexpected end of JSON input")
+                    ? "Ошибка в ответе сервера"
+                    : error.message);
+            });
+    }
+
+    // Функция для отображения ошибок в UI
+    function displayError(message) {
+        const responseContainer = document.querySelector("#responseContainer");
+        // Убираем технические детали (если нужно)
+        const userMessage = message.replace(/^Error: /, '');
+        responseContainer.innerHTML = `
+        <span style="color: red; font-weight: bold;">
+            ${userMessage || "Произошла ошибка"}
+        </span>`;
+        responseContainer.className = "yellow-background";
+    }
+</script>
+
+<!-- Скрипт для обработки и отображения ответа -->
+<script>// Функция для обработки и отображения ответа
+
+function formatDate(dateString) {
+    if (!dateString) return ''; // Если дата пустая, возвращаем пустую строку
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+}
+
+function displayResponse(data) {
+    const responseContainer = document.querySelector("#responseContainer");
+    const form = document.querySelector("#insuranceForm");
+    const activeDetails = form.querySelector("details[open]");
+    const stype = parseInt(activeDetails.querySelector("input[name='stype']").value);
+
+    responseContainer.innerHTML = '';
+    responseContainer.className = '';
+
+    const fieldNames = {
+        fam: "Фамилия",
+        im: "Имя",
+        ot: "Отчество",
+        dr: "Дата рождения",
+        w: "Пол",
+        doctype: "Тип документа",
+        docser: "Серия документа",
+        docnum: "Номер документа",
+        docorg: "Кем выдан",
+        docdate: "Дата выдачи",
+        snils: "СНИЛС",
+        datE_BEGIN: "Дата начала",
+        datE_END: "Дата окончания",
+        active: "Активен",
+        vpolis: "Тип полиса",
+        spolis: "Серия полиса",
+        npolis: "Номер полиса",
+        enp: "ЕНП",
+        smo: "Код страховой организации",
+        namsmok: "Страховая организация",
+        reenom: "Код региона",
+        adres: "Адрес",
+        sS_VR: "Доп. информация",
+        datE_P: "Дата последнего обновления",
+        terst: "Территория страхования",
+        name: "Название организации",
+        correct: "Корректность данных",
+        source: "Источник"
+    };
+
+    if (data && typeof data === 'object' && data.response) {
+        data.response.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'response-item';
+
+            for (const key in item) {
+                if (item.hasOwnProperty(key) && fieldNames[key]) { // Исключаем id и requestId
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = 'response-field';
+
+                    const displayName = fieldNames[key];
+                    let value = item[key];
+
+                    // Форматирование дат
+                    if (key.toLowerCase().includes('date') || key.toLowerCase().includes('dr')) {
+                        value = formatDate(value);
+                    }
+
+                    // Исправление вывода active
+                    if (key === 'active') {
+                        value = value ? 'ДА' : 'НЕТ';
+                    }
+
+                    // Исправление вывода пола
+                    if (key === 'w') {
+                        value = value === 1 ? 'Муж.' : value === 2 ? 'Жен.' : value;
+                    }
+
+                    // Исправление вывода адреса (если сервер передает объект, а не строку)
+                    if (key === 'adres' && typeof value === 'object' && value !== null) {
+                        value = Object.values(value).filter(Boolean).join(', ');
+                    }
+
+                    fieldDiv.innerHTML = `<span class="title_span">${displayName}: </span><span class="value_span">${value}</span>`;
+                    itemDiv.appendChild(fieldDiv);
+                }
+            }
+
+            responseContainer.appendChild(itemDiv);
+        });
+
+        const enpInput = document.querySelector("input[name='enp']");
+
+        const responseItem = data.response[0];
+
+        // Определяем тип запроса и применяем соответствующую логику окраски
+        if (stype === 1) {
+            // Запрос по ЕНП
+            const enpRequestValue = activeDetails.querySelector("input[name='enp']").value.trim();
+
+            if (responseItem.enp === enpRequestValue) {
+                responseContainer.classList.add(responseItem.active ? 'green-background' : 'red-background');
+            } else if (responseItem.enp && responseItem.active) {
+                responseContainer.classList.add('blue-background');
+            } else if (!responseItem.enp) {
+                responseContainer.classList.add('red-background');
+            }
+        } else if (stype === 2 || stype === 3) {
+            // Запрос по ФИО+ДР или ДУЛ
+            if (responseItem.enp) {
+                responseContainer.classList.add(responseItem.active ? 'green-background' : 'red-background');
+            }
+        }
+
+        // Дополнительная проверка на значение SMO
+        if (responseItem.smo && responseItem.smo !== '05501') {
+            responseContainer.classList.add('smo-warning');
+        }
+
+    } else {
+        responseContainer.textContent = "Нет данных";
+        responseContainer.classList.add('yellow-background');
+    }
+}
+</script>
+
+</body>
+</html>

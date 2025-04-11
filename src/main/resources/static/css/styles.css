@@ -1,0 +1,304 @@
+.container {
+    display: flex;
+    padding: 20px;
+}
+body {
+    font-family: sans-serif;
+    margin: 0px;
+    background: #f5f5f7;
+}
+
+.sidebar {
+    width: 20%;
+    margin-right: 20px;
+}
+details {
+    padding: 10px;
+    background: #fff;
+    margin: 8px 0;
+    border-radius: 5px;
+    box-shadow: 0 3px 1px -2px #0003, 0 2px 2px 0 #00000024, 0 1px 5px 0 #0000001f;
+}
+summary {
+    font-weight: 200;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.result {
+    width: 80%;
+}
+.result h3 {
+    padding: 0px;
+    margin: 8px 0px;
+}
+.green-background {
+    background-color: #d4edda; /* Зеленый */
+}
+
+.red-background {
+    background-color: #f8d7da; /* Красный */
+}
+
+.blue-background {
+    background-color: #d1ecf1; /* Синий */
+}
+
+.yellow-background {
+    background-color: #fff3cd; /* Желтый */
+}
+input[type="text"] {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0, 0, 0, .09);
+    border-radius: 5px;
+    width: 100%;
+    display: block;
+    margin-top: 10px;
+    max-width: -webkit-fill-available;
+}
+
+input[type="date"] {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0, 0, 0, .09);
+    border-radius: 5px;
+    width: 100%;
+    display: block;
+    margin-top: 10px;
+    max-width: -webkit-fill-available;
+}
+
+select {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(0, 0, 0, .09);
+    border-radius: 5px;
+    width: 100%;
+    display: block;
+    margin-top: 10px;
+    max-width: -webkit-fill-available;
+}
+
+.title_span, .value_span {
+    text-transform: uppercase;
+}
+
+.title_span {
+    font-weight: bold;
+}
+
+.response-field {
+    padding: 4px;
+    border-bottom: 1px dotted;
+}
+
+#responseContainer {
+    border: 2px dotted;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 18px #00000040;
+}
+
+button {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #004e86;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    color: #fff;
+    cursor:pointer;
+    box-shadow: 0 3px 1px -2px #0003, 0 2px 2px 0 #00000024, 0 1px 5px 0 #0000001f;
+}
+
+button:hover {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px;
+    background: #0270bf;
+    border: none;
+    border-radius: 4px;
+    font-size: 18px;
+    color: #fff;
+    cursor:pointer;
+    box-shadow: 0 3px 1px -2px #0003, 0 2px 2px 0 #00000024, 0 1px 5px 0 #0000001f;
+}
+
+.header {
+    display: flex;
+    align-items: center; /* Центрируем элементы по вертикали */
+    position: relative;
+    padding: 10px 10px;
+    background: #004e86;
+    color: #fff;
+    justify-content: space-between;
+}
+
+.header img {
+    max-height: 50px; /* Задайте подходящую высоту, если логотип слишком большой */
+}
+
+.header h2 {
+    margin: 0;
+}
+
+.colors_info {
+    margin-top: 10px;
+}
+
+.colors_info span {
+    display: block;
+    text-align: center;
+    padding: 10px;
+}
+
+.colors_info .police_active {
+    background: #d4edda;
+}
+
+.colors_info .police_inactive {
+    background: #f8d7da;
+}
+
+.colors_info .police_other {
+    background: #d1ecf1;
+}
+
+.colors_info .police_no_data {
+    background: #fff3cd;
+}
+
+.colors_info .police_inogor {
+    background: #e0b3ff;
+}
+
+.smo-warning {
+    background-color: #e0b3ff;
+}
+
+nav {
+    float: right;
+}
+nav a {
+    margin-left: 0px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #fff;
+    background: #004e86;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+nav a:hover {
+    color: #000;
+    background: #fff;
+}
+
+nav a.active {
+    color: #000;
+    background: #fff;
+}
+
+.btn_enp_request, .btn_fio_request, .btn_download_response {
+    width: auto !important;
+    margin-top: 0 !important;
+}
+
+.result .table_wrapper {
+    margin-top: 20px;
+    height: 610px;
+    overflow-y: scroll;
+    position: relative;
+}
+
+#request_items {
+    border-collapse: collapse;
+    width: 100%;
+    overflow-y: auto;
+}
+
+#request_items td, #request_items th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#request_items tr:nth-child(even){background-color: #f2f2f2;}
+
+#request_items tr:hover {background-color: #ddd;}
+
+#request_items th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #004e86de;
+    color: white;
+}
+
+/* Стиль для индикатора загрузки */
+.loading-overlay {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: #888;
+}
+.loading-spinner {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+}
+
+/* Анимация для крутящегося спиннера */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.actions_wrapper .actions, .actions_wrapper .actions_download {
+    display: inline-block;
+}
+
+.btn_download_response {
+    background: #1da31c;
+}
+
+.btn_download_response:hover {
+    background: #189a17;
+}
+
+.header .logo, .header .title, .header .mainmenu {
+    flex: 1;
+    display: flex;
+}
+
+#drop-area {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+}
+
+#drop-area.drag-over {
+    border-color: #0088cc;
+}
+
+#drop-area p {
+    font-size: 16px;
+}
+
+#upload-btn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
