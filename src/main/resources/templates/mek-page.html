@@ -3,6 +3,8 @@
 <head>
   <title>Работа с МЭК</title>
   <link rel="stylesheet" href="/css/styles.css"/>
+  <link rel="stylesheet" href="/fontawesome/css/all.min.css"/>
+  <script src="/js/table-sort.js"></script>
 </head>
 <body>
 
@@ -24,9 +26,6 @@
       <p>Перетащите файл XML сюда или выберите файл для загрузки.</p>
       <input type="file" id="file-input" onchange="onFileSelected()"/>
     </div>
-  </div>
-
-  <div class="result">
 
     <div class="actions_wrapper">
       <div class="actions" th:if="${items != null and items.size() > 0}">
@@ -38,20 +37,22 @@
         <button class="btn_download_response" id="download-btn" style="display: none;" onclick="downloadFile()">Скачать ответ</button>
       </div>
     </div>
+  </div>
 
+  <div class="result">
     <div class="table_wrapper">
       <table id="request_items">
         <thead>
         <tr>
-          <th>Полис</th>
-          <th>Фамилия</th>
-          <th>Имя</th>
-          <th>Отчество</th>
-          <th>Дата рождения</th>
-          <th>Date_in</th>
-          <th>Date_out</th>
-          <th>Отделение</th>
-          <th>Комментарий</th>
+          <th class="sortable">Полис</th>
+          <th class="sortable">Фамилия</th>
+          <th class="sortable">Имя</th>
+          <th class="sortable">Отчество</th>
+          <th class="sortable">Дата рожд.</th>
+          <th class="sortable">Дата нач.</th>
+          <th class="sortable">Дата оконч.</th>
+          <th class="sortable">Отделение</th>
+          <th class="sortable">Комментарий</th>
         </tr>
         </thead>
         <tbody>

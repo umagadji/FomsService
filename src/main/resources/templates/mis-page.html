@@ -3,6 +3,8 @@
 <head>
   <title>Работа с МИС</title>
   <link rel="stylesheet" href="/css/styles.css"/>
+  <link rel="stylesheet" href="/fontawesome/css/all.min.css"/>
+  <script src="/js/table-sort.js"></script>
 </head>
 <body>
 
@@ -20,20 +22,20 @@
 
 <div class="container">
   <div class="sidebar">
-    <form id="load-data-form">
-      <label>Дата с:
-        <input type="date" name="startDate" required th:value="${startDate}">
-      </label>
-      <label>по:
-        <input type="date" name="endDate" required th:value="${endDate}">
-      </label>
+    <form id="load-data-form" onsubmit="loadItems(event)">
+      <div class="form_wrapper">
+        <label>Дата с:
+          <input type="date" name="startDate" id="startDate" required>
+        </label>
+        <label>по:
+          <input type="date" name="endDate" id="endDate" required>
+        </label>
+      </div>
       <button type="submit">Загрузить данные</button>
     </form>
-  </div>
 
-  <div class="result">
     <div class="actions_wrapper">
-      <div class="actions" th:if="${items != null and items.size() > 0}">
+      <div class="actions" id="package-buttons" style="display: none;">
         <button class="btn_enp_request" onclick="submitPackage('enp')">Пакетный запрос по полисам</button>
         <button class="btn_fio_request" onclick="submitPackage('fio')">Пакетный запрос по ФИО</button>
       </div>
@@ -41,20 +43,23 @@
         <button class="btn_download_response" id="download-btn" style="display: none;" onclick="downloadFile()">Скачать ответ</button>
       </div>
     </div>
+  </div>
 
+  <div class="result">
+    <div id="error-message" style="color: red;"></div>
     <div class="table_wrapper">
       <table id="request_items">
         <thead>
         <tr>
-          <th>Полис</th>
-          <th>Фамилия</th>
-          <th>Имя</th>
-          <th>Отчество</th>
-          <th>Дата рождения</th>
-          <th>Date_in</th>
-          <th>Date_out</th>
-          <th>Отделение</th>
-          <th>Комментарий</th>
+          <th class="sortable">Полис</th>
+          <th class="sortable">Фамилия</th>
+          <th class="sortable">Имя</th>
+          <th class="sortable">Отчество</th>
+          <th class="sortable">Дата рожд.</th>
+          <th class="sortable">Дата нач.</th>
+          <th class="sortable">Дата оконч.</th>
+          <th class="sortable">Отделение</th>
+          <th class="sortable">Комментарий</th>
         </tr>
         </thead>
         <tbody>
@@ -80,36 +85,129 @@
 
 <script>
   function submitPackage(type) {
+    const overlay = document.getElementById('loading-overlay');
+    const downloadBtn = document.getElementById('download-btn');
+    const errorMessage = document.getElementById('error-message');
+
+    // Скрыть старое сообщение об ошибке
+    errorMessage.textContent = '';
+
     // Показываем индикатор загрузки
-    document.getElementById('loading-overlay').style.display = 'block';
+    overlay.style.display = 'block';
+    // Прячем кнопку скачивания на всякий случай
+    downloadBtn.style.display = 'none';
 
     const formData = new FormData();
     formData.append('type', type);
     formData.append('startDate', document.querySelector('input[name="startDate"]').value);
     formData.append('endDate', document.querySelector('input[name="endDate"]').value);
 
-    // Создаем запрос с использованием Fetch API (AJAX)
     fetch('/mis/package-query', {
       method: 'POST',
       body: formData
     })
-            .then(response => response.json())  // Преобразуем ответ в JSON
-            .then(data => {
-              document.getElementById('loading-overlay').style.display = 'none'; // Скрываем индикатор загрузки
-
-              if (data.hasData) {
-                // Если есть данные для скачивания, показываем кнопку
-                document.getElementById('download-btn').style.display = 'inline-block';
+            .then(async response => {
+              if (!response.ok) {
+                // Сервер вернул ошибку (например, 400), но без тела
+                throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
               }
+              return response.json();
+            })
+            .then(data => {
+              // Если сервер вернул ошибку
+              if (data.error) {
+                // Показываем ошибку на странице
+                errorMessage.textContent = "Ошибка запроса: " + data.error;
+              } else if (data.hasData) {
+                downloadBtn.style.display = 'inline-block';
+              }
+              // Скрываем индикатор после показа кнопки
+              overlay.style.display = 'none';
+            })
+            .catch(async error => {
+              overlay.style.display = 'none';
+
+              console.error("Catch block error object:", error);
+
+              if (error instanceof Response) {
+                const text = await error.text(); // Попробуем получить текст из ответа
+                console.error("Ответ от сервера:", text);
+
+                // Если ответ пустой или нет текстового содержимого, покажем статус
+                if (!text) {
+                  errorMessage.textContent = "Ошибка запроса: " + error.statusText;
+                } else {
+                  // Если текст есть, покажем его в сообщении об ошибке
+                  errorMessage.textContent = "Ошибка запроса: " + text;
+                }
+              } else if (error instanceof Error) {
+                console.error("Ошибка выполнения запроса:", error.message);
+                errorMessage.textContent = "Ошибка выполнения запроса: " + error.message;
+              } else {
+                console.error("Неизвестная ошибка:", error);
+                errorMessage.textContent = "Произошла неизвестная ошибка";
+              }
+            });
+  }
+
+  function loadItems(event) {
+    event.preventDefault();
+
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const errorMessage = document.getElementById('error-message');
+
+    // Скрыть кнопки перед началом загрузки данных
+    document.getElementById('package-buttons').style.display = 'none';
+    document.getElementById('download-btn').style.display = 'none';
+
+    // Скрыть старое сообщение об ошибке
+    errorMessage.textContent = '';
+
+    document.getElementById('loading-overlay').style.display = 'block';
+
+    fetch(`/mis/items?startDate=${startDate}&endDate=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+              console.log("Ответ с сервера:", data); // ← тут ты уже увидишь массив
+
+              const items = Array.isArray(data) ? data : [];
+
+              const tbody = document.querySelector('#request_items tbody');
+              tbody.innerHTML = '';
+
+              if (items.length > 0) {
+                document.getElementById('package-buttons').style.display = 'block';
+              } else {
+                document.getElementById('package-buttons').style.display = 'none';
+              }
+
+              items.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+          <td>${item.npolis || ''}</td>
+          <td>${item.fam || ''}</td>
+          <td>${item.im || ''}</td>
+          <td>${item.ot || ''}</td>
+          <td>${item.birthDate || ''}</td>
+          <td>${item.date_in || ''}</td>
+          <td>${item.date_out || ''}</td>
+          <td>${item.nameMO || ''}</td>
+          <td>${item.s_com || ''}</td>
+        `;
+                tbody.appendChild(tr);
+              });
+
+              document.getElementById('loading-overlay').style.display = 'none';
             })
             .catch(error => {
-              document.getElementById('loading-overlay').style.display = 'none';  // Скрываем индикатор загрузки в случае ошибки
-              console.error('Error:', error);
+              console.error("Ошибка загрузки данных:", error);
+              document.getElementById('loading-overlay').style.display = 'none';
+              errorMessage.textContent = "Ошибка загрузки данных: " + error.message;
             });
   }
 
   function downloadFile() {
-    // Инициализируем скачивание файла
     window.location.href = "/mis/downloadFile";
   }
 </script>

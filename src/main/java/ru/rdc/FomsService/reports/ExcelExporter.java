@@ -154,7 +154,8 @@ public class ExcelExporter {
                 row.createCell(1).setCellValue(errorDetails.toString()); // Ошибка своя
                 row.createCell(2).setCellValue(item != null ? item.getFam().toUpperCase() : ""); // Исходная фамилия
                 row.createCell(3).setCellValue(item != null ? item.getIm().toUpperCase() : ""); // Исходное имя
-                row.createCell(4).setCellValue(item != null ? item.getOt().toUpperCase() : ""); // Исходное отчество
+                row.createCell(4).setCellValue(item != null && item.getOt() != null ? item.getOt().toUpperCase() : ""); // Исходное отчество
+                row.createCell(4).setCellValue(""); // Исходное отчество
                 row.createCell(5).setCellValue(item != null ? item.getBirthDate() : ""); // Исходная дата рождения
                 row.createCell(6).setCellValue(item != null ? item.getNameMO() : ""); // Исходное МО
                 row.createCell(7).setCellValue(response.getFam()); // Фамилия
@@ -203,9 +204,9 @@ public class ExcelExporter {
             }
 
             // Автоматически подгоняем ширину столбцов
-            /*for (int i = 0; i < headers.length; i++) {
+            for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
-            }*/
+            }
 
             // Записываем файл
             try (FileOutputStream fileOut = new FileOutputStream(file)) {
