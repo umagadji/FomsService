@@ -13,9 +13,9 @@
   <div class="title"><h2>Работа с МИС</h2></div>
   <div class="mainmenu">
     <nav>
-      <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}">Главная</a>
-      <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}">Работа с МЭК</a>
-      <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}">Работа с МИС</a>
+      <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
+      <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}"><i class="fa-solid fa-scroll"></i> Работа с МЭК</a>
+      <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}"><i class="fa-solid fa-database"></i> Работа с МИС</a>
     </nav>
   </div>
 </div>
@@ -46,7 +46,7 @@
   </div>
 
   <div class="result">
-    <div id="error-message" style="color: red;"></div>
+    <div id="error-message" style="color: red; display: none;"></div>
     <div class="table_wrapper">
       <table id="request_items">
         <thead>
@@ -127,6 +127,28 @@
             .catch(async error => {
               overlay.style.display = 'none';
 
+              let errorText = "Ошибка запроса";
+
+              if (error instanceof Response) {
+                try {
+                  const errorData = await error.json();
+                  errorText += ": " + (errorData.message || errorData.error || error.statusText);
+                } catch (e) {
+                  const text = await error.text();
+                  errorText += ": " + (text || error.statusText);
+                }
+              } else if (error instanceof Error) {
+                errorText += ": " + error.message;
+              } else {
+                errorText += ": Неизвестная ошибка";
+              }
+
+              errorMessage.textContent = errorText;
+              console.error("Ошибка выполнения запроса:", error);
+            });
+            /*.catch(async error => {
+              overlay.style.display = 'none';
+
               console.error("Catch block error object:", error);
 
               if (error instanceof Response) {
@@ -147,7 +169,7 @@
                 console.error("Неизвестная ошибка:", error);
                 errorMessage.textContent = "Произошла неизвестная ошибка";
               }
-            });
+            });*/
   }
 
   function loadItems(event) {
@@ -161,7 +183,8 @@
     document.getElementById('package-buttons').style.display = 'none';
     document.getElementById('download-btn').style.display = 'none';
 
-    // Скрыть старое сообщение об ошибке
+    // Скрываем сообщение перед новым запросом
+    errorMessage.style.display = 'none';
     errorMessage.textContent = '';
 
     document.getElementById('loading-overlay').style.display = 'block';
@@ -170,6 +193,8 @@
             .then(response => response.json())
             .then(data => {
               console.log("Ответ с сервера:", data); // ← тут ты уже увидишь массив
+              // Успешный ответ - скрываем ошибку (если была ранее)
+              errorMessage.style.display = 'none';
 
               const items = Array.isArray(data) ? data : [];
 
@@ -200,11 +225,31 @@
 
               document.getElementById('loading-overlay').style.display = 'none';
             })
-            .catch(error => {
+            .catch(async error => {
+              errorMessage.style.display = 'block'; // Делаем видимым
+              console.error("Ошибка загрузки данных:", error);
+              document.getElementById('loading-overlay').style.display = 'none';
+
+              let errorText = "Ошибка загрузки данных";
+
+              if (error instanceof Response) {
+                try {
+                  const errorData = await error.json();
+                  errorText += ": " + (errorData.message || errorData.error || error.statusText);
+                } catch (e) {
+                  errorText += ": " + error.statusText;
+                }
+              } else if (error instanceof Error) {
+                errorText += ": " + error.message;
+              }
+
+              errorMessage.textContent = errorText;
+            });
+            /*.catch(error => {
               console.error("Ошибка загрузки данных:", error);
               document.getElementById('loading-overlay').style.display = 'none';
               errorMessage.textContent = "Ошибка загрузки данных: " + error.message;
-            });
+            });*/
   }
 
   function downloadFile() {

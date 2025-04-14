@@ -372,3 +372,13 @@ nav a.active {
 #drop-area img {
     width: 70px;
 }
+
+#error-message {
+    color: red;
+    font-weight: bold;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #ffeeee;
+    border: 1px solid #ffcccc;
+    border-radius: 4px;
+}

@@ -13,9 +13,9 @@
   <div class="title"><h2>Работа с МЭК</h2></div>
   <div class="mainmenu">
     <nav>
-      <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}">Главная</a>
-      <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}">Работа с МЭК</a>
-      <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}">Работа с МИС</a>
+      <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
+      <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}"><i class="fa-solid fa-scroll"></i> Работа с МЭК</a>
+      <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}"><i class="fa-solid fa-database"></i> Работа с МИС</a>
     </nav>
   </div>
 </div>
@@ -41,6 +41,7 @@
   </div>
 
   <div class="result">
+    <div id="error-message" style="color: red; display: none;"></div>
     <div class="table_wrapper">
       <table id="request_items">
         <thead>
@@ -83,8 +84,14 @@
     const fileInput = document.getElementById("file-input");
     const file = fileInput.files[0];
 
+    const errorMessage = document.getElementById('error-message');
+
+    // Скрываем предыдущее сообщение об ошибке
+    errorMessage.style.display = 'none';
+    errorMessage.textContent = '';
+
     if (!file) {
-      alert("Пожалуйста, выберите файл для загрузки.");
+      showError("Пожалуйста, выберите файл для загрузки.");
       return;
     }
 
@@ -98,7 +105,15 @@
       method: 'POST',
       body: formData
     })
-            .then(response => response.json())
+            /*.then(response => response.json())*/
+            .then(async response => {
+              if (!response.ok) {
+                // Если сервер вернул ошибку (например, 400)
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `Ошибка ${response.status}: ${response.statusText}`);
+              }
+              return response.json();
+            })
             .then(data => {
               document.getElementById('loading-overlay').style.display = 'none';
 
@@ -106,11 +121,12 @@
                 const encodedPath = encodeURIComponent(data.xmlPath);
                 window.location.href = `/mek?xmlPath=${encodedPath}`;
               } else {
-                alert("Ошибка загрузки файла: " + data.message);
+                showError(data.message || "Неизвестная ошибка при загрузке файла")
               }
             })
             .catch(error => {
               document.getElementById('loading-overlay').style.display = 'none';
+              showError(error.message);
               console.error("Ошибка:", error);
             });
   }
@@ -120,6 +136,11 @@
     document.getElementById('loading-overlay').style.display = 'block';
 
     const xmlPath = new URLSearchParams(window.location.search).get('xmlPath');
+    const errorMessage = document.getElementById('error-message');
+
+    // Скрываем предыдущее сообщение об ошибке
+    errorMessage.style.display = 'none';
+    errorMessage.textContent = '';
 
     const formData = new FormData();
     formData.append('type', type);
@@ -129,17 +150,37 @@
       method: 'POST',
       body: formData
     })
-            .then(response => response.json())
+            /*.then(response => response.json())*/
+            .then(async response => {
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `Ошибка ${response.status}: ${response.statusText}`);
+              }
+              return response.json();
+            })
             .then(data => {
               document.getElementById('loading-overlay').style.display = 'none';
-              if (data.hasData) {
+              /*if (data.hasData) {
+                document.getElementById('download-btn').style.display = 'inline-block';
+              }*/
+              if (data.error) {
+                showError("Ошибка запроса: " + data.error);
+              } else if (data.hasData) {
                 document.getElementById('download-btn').style.display = 'inline-block';
               }
             })
             .catch(error => {
               document.getElementById('loading-overlay').style.display = 'none';
+              showError(error.message);
               console.error('Ошибка:', error);
             });
+  }
+
+  // Функция для отображения ошибки
+  function showError(message) {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
   }
 
   // Функция для скачивания ответа

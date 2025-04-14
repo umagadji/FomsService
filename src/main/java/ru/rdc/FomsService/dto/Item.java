@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @Setter
 //Класс описывающий данные из файла МЭК или из МИС
 public class Item {
+    private int requestId;
     private String s_com;
     private String spolis;
     private String npolis;
@@ -35,9 +37,35 @@ public class Item {
     private String idserv;
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return Objects.equals(s_com, item.s_com) &&
+                Objects.equals(spolis, item.spolis) &&
+                Objects.equals(npolis, item.npolis) &&
+                Objects.equals(fam, item.fam) &&
+                Objects.equals(im, item.im) &&
+                Objects.equals(ot, item.ot) &&
+                Objects.equals(birthDate, item.birthDate) &&
+                Objects.equals(date_in, item.date_in) &&
+                Objects.equals(date_out, item.date_out) &&
+                Objects.equals(refreason, item.refreason);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                s_com, spolis, npolis, fam, im, ot, birthDate,
+                date_in, date_out, refreason
+        );
+    }
+
+    @Override
     public String toString() {
         return "Item{" +
-                "s_com='" + s_com + '\'' +
+                "requestId='" + requestId + '\'' +
+                ", s_com='" + s_com + '\'' +
                 ", spolis='" + spolis + '\'' +
                 ", npolis='" + npolis + '\'' +
                 ", fam='" + fam + '\'' +

@@ -79,7 +79,8 @@ public class MekController {
         // 🔄 Форматируем даты сразу после парсинга
         formatItemDates(items);
 
-        Set<InsuranceRequest> uniqueRequests = new LinkedHashSet<>();
+        // Сохраняем связь между уникальными запросами и оригинальными Item
+        Map<InsuranceRequest, Item> requestItemMap = new LinkedHashMap<>();
 
         for (Item item : items) {
             InsuranceRequest request = new InsuranceRequest();
@@ -96,14 +97,23 @@ public class MekController {
                 request.setStype(2);
             }
 
-            uniqueRequests.add(request);
+            // Добавляем в мапу (дубликаты автоматически отсеются по equals/hashCode InsuranceRequest)
+            requestItemMap.put(request, item);
         }
 
+        // Теперь присваиваем requestId и в Request, и в соответствующий Item
         int requestId = 1;
         List<InsuranceRequest> insuranceRequestList = new ArrayList<>();
-        for (InsuranceRequest req : uniqueRequests) {
-            req.setRequestId(requestId++);
+
+        for (Map.Entry<InsuranceRequest, Item> entry : requestItemMap.entrySet()) {
+            InsuranceRequest req = entry.getKey();
+            Item item = entry.getValue();
+
+            req.setRequestId(requestId);
+            item.setRequestId(requestId);
+
             insuranceRequestList.add(req);
+            requestId++;
         }
 
         InsurancePackageRequest packageRequest = new InsurancePackageRequest();
@@ -115,7 +125,8 @@ public class MekController {
 
         if (!response.getResponses().isEmpty()) {
             File file = new File("response-mek.xlsx");
-            excelExporter.saveToExcel(response.getResponses(), items, file);
+            //new ArrayList<>(requestItemMap.values()) - исходные данные без дубликатов
+            excelExporter.saveToExcel(response.getResponses(), new ArrayList<>(requestItemMap.values()), file);
         }
 
         Map<String, Object> responseData = new HashMap<>();

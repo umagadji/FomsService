@@ -3,6 +3,7 @@
 <head>
     <title>Страхование</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/fontawesome/css/all.min.css"/>
 </head>
 <body>
 
@@ -11,9 +12,9 @@
     <div class="title"><h2>Поиск информации</h2></div>
     <div class="mainmenu">
         <nav>
-            <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}">Главная</a>
-            <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}">Работа с МЭК</a>
-            <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}">Работа с МИС</a>
+            <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
+            <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}"><i class="fa-solid fa-scroll"></i> Работа с МЭК</a>
+            <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}"><i class="fa-solid fa-database"></i> Работа с МИС</a>
         </nav>
     </div>
 </div>

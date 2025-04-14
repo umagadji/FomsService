@@ -77,6 +77,79 @@ public class MisController {
             // Получаем данные из базы по переданным датам
             List<Item> items = misService.getOracleModels(startDate, endDate);
 
+            // Сохраняем связь между уникальными запросами и оригинальными Item
+            Map<InsuranceRequest, Item> requestItemMap = new LinkedHashMap<>();
+
+            for (Item item : items) {
+                InsuranceRequest request = new InsuranceRequest();
+                request.setRequestId(1); // временно
+
+                if ("enp".equals(type)) {
+                    request.setEnp(item.getNpolis());
+                    request.setStype(1);
+                } else if ("fio".equals(type)) {
+                    request.setFam(item.getFam());
+                    request.setIm(item.getIm());
+                    request.setOt(item.getOt());
+                    request.setDr(convertDateFormat(item.getBirthDate()));
+                    request.setStype(2);
+                }
+
+                // Добавляем в мапу (дубликаты отфильтруются по equals/hashCode)
+                requestItemMap.put(request, item);
+            }
+
+            // Присваиваем уникальные requestId и связываем с Item
+            int requestId = 1;
+            List<InsuranceRequest> insuranceRequestList = new ArrayList<>();
+
+            for (Map.Entry<InsuranceRequest, Item> entry : requestItemMap.entrySet()) {
+                InsuranceRequest req = entry.getKey();
+                Item item = entry.getValue();
+
+                req.setRequestId(requestId);
+                item.setRequestId(requestId);
+
+                insuranceRequestList.add(req);
+                requestId++;
+            }
+
+            // Создаём пакетный запрос
+            InsurancePackageRequest packageRequest = new InsurancePackageRequest();
+            packageRequest.setInsuranceRequestList(insuranceRequestList);
+
+            // Получаем ответ от внешнего сервиса
+            InsurancePackageResponse response = insurancePackageService.getPackageInsurance(packageRequest)
+                    .onErrorReturn(new InsurancePackageResponse())
+                    .block();
+
+            // Если есть ответ — сохраняем в Excel
+            if (response.getResponses() != null && !response.getResponses().isEmpty()) {
+                File file = new File("response.xlsx");
+                excelExporter.saveToExcel(response.getResponses(), new ArrayList<>(requestItemMap.values()), file);
+            }
+
+            responseData.put("hasData", response.getResponses() != null && !response.getResponses().isEmpty());
+            responseData.put("downloadFile", "/mis/downloadFile");
+
+        } catch (Exception e) {
+            responseData.put("error", "Ошибка запроса: " + e.getMessage());
+        }
+
+        return responseData;
+    }
+
+    /*@PostMapping("/package-query")
+    @ResponseBody
+    public Map<String, Object> handlePackageQuery(@RequestParam String type,
+                                                  @RequestParam String startDate,
+                                                  @RequestParam String endDate) {
+        Map<String, Object> responseData = new HashMap<>();
+
+        try {
+            // Получаем данные из базы по переданным датам
+            List<Item> items = misService.getOracleModels(startDate, endDate);
+
             // Используем Set для хранения уникальных запросов
             Set<InsuranceRequest> uniqueRequests = new LinkedHashSet<>();
 
@@ -133,7 +206,7 @@ public class MisController {
         }
 
         return responseData;  // Возвращаем ответ в формате JSON
-    }
+    }*/
 
     // Метод для скачивания файла
     @GetMapping("/downloadFile")
