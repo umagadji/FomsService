@@ -363,3 +363,12 @@ nav a.active {
 #request_items th.sortable.desc::after {
     content: "\f0dd"; /* fa-sort-down */
 }
+
+#drop-area.highlight {
+    background-color: #eef6ff;
+    border: 2px dashed #007bff;
+}
+
+#drop-area img {
+    width: 70px;
+}

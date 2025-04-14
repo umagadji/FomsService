@@ -23,6 +23,7 @@
 <div class="container">
   <div class="sidebar">
     <div id="drop-area">
+      <img src="/images/icon_upload.svg"/>
       <p>Перетащите файл XML сюда или выберите файл для загрузки.</p>
       <input type="file" id="file-input" onchange="onFileSelected()"/>
     </div>
@@ -145,6 +146,40 @@
   function downloadFile() {
     window.location.href = "/mek/downloadFile";
   }
+</script>
+
+<script>
+  const dropArea = document.getElementById('drop-area');
+  const fileInput = document.getElementById('file-input');
+
+  // Подсветка при наведении
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.add('highlight');
+    }, false);
+  });
+
+  // Убираем подсветку, когда уходим
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.remove('highlight');
+    }, false);
+  });
+
+  // Обработка файла при отпускании
+  dropArea.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0) {
+      fileInput.files = files; // Заполняем file input, чтобы onFileSelected сработал
+      onFileSelected();        // Запускаем функцию обработки
+    }
+  });
 </script>
 
 </body>
