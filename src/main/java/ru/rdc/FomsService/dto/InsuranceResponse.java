@@ -48,8 +48,6 @@ public class InsuranceResponse {
     private int correct;
     private String source;
 
-    private String sourceNpolis;
-
     // Форматтер для вывода дат
     private static final DateTimeFormatter OUTPUT_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 

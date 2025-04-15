@@ -44,12 +44,12 @@ public class ExcelExporter {
             CellStyle blueStyle = getBlueRowStyle(workbook);  // синяя заливка для активных полисов
 
             String[] headers = {
-                    "Request ID", "Комментарий", "Причина",
+                    "Request ID", "Комментарий", "Причина","Исх. Полис",
                     "Исх. Фамилия", "Исх. Имя", "Исх. Отчество", "Исх. Дата рождения", "Исх. МО",
-                    "Ответ: Фамилия", "Ответ: Имя", "Ответ: Отчество", "Ответ: Дата рождения", "Ответ: Пол",
-                    "Тип полиса", "Серия", "Полис", "ЕНП", "Дата начала", "Дата окончания", "СМО", "Название СМО",
+                    "Полис", "ЕНП", "Ответ: Фамилия", "Ответ: Имя", "Ответ: Отчество", "Ответ: Дата рождения", "Ответ: Пол",
+                    "Тип полиса", "Серия", "Дата начала", "Дата окончания", "СМО", "Название СМО",
                     "Реестровый №", "Тип ДУЛ", "Серия ДУЛ", "Номер ДУЛ", "Организация", "Дата выдачи",
-                    "СНИЛС", "Активный", "Адрес", "Дата П", "Территория", "Организация", "Корректность", "Источник", "Исходный полис"
+                    "СНИЛС", "Активный", "Адрес", "Дата П", "Территория", "Организация", "Корректность", "Источник"
             };
 
             Row headerRow = sheet.createRow(0);
@@ -130,6 +130,8 @@ public class ExcelExporter {
                 String reason = (response == null) ? "Сервер не вернул ответ" : errorDetails.toString();
                 row.createCell(col++).setCellValue(reason);
 
+                row.createCell(col++).setCellValue(item.getNpolis());
+
                 row.createCell(col++).setCellValue(toUpperTrim(item.getFam()));
                 row.createCell(col++).setCellValue(toUpperTrim(item.getIm()));
                 row.createCell(col++).setCellValue(toUpperTrim(item.getOt()));
@@ -137,6 +139,8 @@ public class ExcelExporter {
                 row.createCell(col++).setCellValue(item.getNameMO());
 
                 if (response != null) {
+                    row.createCell(col++).setCellValue(response.getNpolis());
+                    row.createCell(col++).setCellValue(response.getEnp());
                     row.createCell(col++).setCellValue(toUpperTrim(response.getFam()));
                     row.createCell(col++).setCellValue(toUpperTrim(response.getIm()));
                     row.createCell(col++).setCellValue(toUpperTrim(response.getOt()));
@@ -144,8 +148,6 @@ public class ExcelExporter {
                     row.createCell(col++).setCellValue(response.getW() == 1 ? "Мужской" : "Женский");
                     row.createCell(col++).setCellValue(response.getVpolis());
                     row.createCell(col++).setCellValue(response.getSpolis());
-                    row.createCell(col++).setCellValue(response.getNpolis());
-                    row.createCell(col++).setCellValue(response.getEnp());
                     row.createCell(col++).setCellValue(formatDate(response.getDatE_BEGIN()));
                     row.createCell(col++).setCellValue(formatDate(response.getDatE_END()));
                     row.createCell(col++).setCellValue(response.getSmo());
@@ -164,7 +166,6 @@ public class ExcelExporter {
                     row.createCell(col++).setCellValue(response.getName());
                     row.createCell(col++).setCellValue(response.getCorrect());
                     row.createCell(col++).setCellValue(response.getSource());
-                    row.createCell(col++).setCellValue(response.getSourceNpolis());
                 } else {
                     for (int i = 0; i < 28; i++) {
                         row.createCell(col++).setCellValue("");
