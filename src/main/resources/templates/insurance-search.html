@@ -89,7 +89,7 @@
     </div>
 
     <div class="result">
-        <h3>Результат:</h3>
+        <h3>Результат: <span id="resultName"></span></h3>
         <div id="responseContainer">
             Нет данных
         </div>
@@ -251,11 +251,14 @@ function formatDate(dateString) {
 function displayResponse(data) {
     const responseContainer = document.querySelector("#responseContainer");
     const form = document.querySelector("#insuranceForm");
+    const resultNameSpan = document.querySelector("#resultName");
     const activeDetails = form.querySelector("details[open]");
     const stype = parseInt(activeDetails.querySelector("input[name='stype']").value);
 
     responseContainer.innerHTML = '';
     responseContainer.className = '';
+    resultNameSpan.textContent = '';
+    resultNameSpan.className = '';
 
     const fieldNames = {
         fam: "Фамилия",
@@ -290,6 +293,21 @@ function displayResponse(data) {
 
     if (data && typeof data === 'object' && data.response) {
         data.response.forEach(item => {
+
+            // Добавляем название из поля name в заголовок
+            if (item.name && resultNameSpan) {
+                resultNameSpan.textContent = item.name;
+                // Удаляем все возможные предыдущие классы
+                resultNameSpan.className = 'result-name';
+
+                // Добавляем класс в зависимости от terst
+                if (item.terst === '82000') {
+                    resultNameSpan.classList.add('dagestan');
+                } else {
+                    resultNameSpan.classList.add('otherinogor');
+                }
+            }
+
             const itemDiv = document.createElement('div');
             itemDiv.className = 'response-item';
 
@@ -352,10 +370,20 @@ function displayResponse(data) {
             }
         }
 
-        // Дополнительная проверка на значение SMO
-        if (responseItem.smo && responseItem.smo !== '05501') {
+        // Дополнительная проверка на значение территории страхования
+        if (responseItem.terst !== '82000') {
             responseContainer.classList.add('smo-warning');
         }
+
+        /*// Дополнительная проверка на значение SMO
+        if (responseItem.smo !== '05501') {
+            responseContainer.classList.add('smo-warning');
+        }*/
+
+        /*// Дополнительная проверка на значение SMO
+        if (responseItem.smo && responseItem.smo !== '05501') {
+            responseContainer.classList.add('smo-warning');
+        }*/
 
     } else {
         responseContainer.textContent = "Нет данных";

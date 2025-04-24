@@ -382,3 +382,19 @@ nav a.active {
     border: 1px solid #ffcccc;
     border-radius: 4px;
 }
+
+/* Стили для названия организации в результате */
+.result-name {
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    display: inline-block; /* Чтобы padding работал корректно */
+}
+
+.result-name.dagestan {
+    background-color: #d4edda; /* Для terst = 82000 */
+}
+
+.result-name.otherinogor {
+    background-color: #e0b3ff; /* Для других terst */
+}
