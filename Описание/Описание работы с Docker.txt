@@ -1,0 +1,43 @@
+1. Сохранение образа в файл
+
+docker save -o fomsservice-foms-service.tar fomsservice-foms-service
+
+	docker save – команда для сохранения образа в архив.
+	-o fomsservice-foms-service.tar – указывает имя выходного файла.
+	fomsservice-foms-service – имя сохраняемого образа.
+	
+2. Перенос файла
+
+Скопируйте файл fomsservice-foms-service.tar
+
+3. Загрузка образа на новом компьютере
+
+docker load -i fomsservice-foms-service.tar
+
+	docker load – загружает образ из архива.
+	-i fomsservice-foms-service.tar – указывает входной файл.
+	
+4. Запуск контейнера
+
+docker run -d --name fomsservice -p 8089:8088 --restart=always fomsservice-foms-service
+
+	-d – запуск контейнера в фоновом режиме (detached).
+	--name fomsservice – присваивает контейнеру имя fomsservice для удобного управления.
+	-p 8089:8089 – пробрасывает порт:
+		8089 на хосте (вашем компьютере) → 8089 в контейнере.
+	--restart=always – автоматически перезапускает контейнер при:
+		Падении.
+		Перезагрузке системы Docker.
+		Вручную остановленном и перезапущенном демоне Docker.
+	fomsservice-foms-service – имя образа, из которого создается контейнер.
+	
+1. Остановка и удаление контейнера
+# Остановить контейнер (если он работает)
+docker stop fomsservice
+
+# Удалить контейнер (после остановки)
+docker rm fomsservice
+
+2. Удаление образа Docker
+
+docker rmi fomsservice-foms-service

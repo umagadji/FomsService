@@ -398,3 +398,11 @@ nav a.active {
 .result-name.otherinogor {
     background-color: #e0b3ff; /* Для других terst */
 }
+
+.lenta_block {
+    display: inline-block;
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    z-index: 1;
+}
