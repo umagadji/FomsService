@@ -23,6 +23,6 @@ public class WebClientConfig {
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create().secure(spec -> spec.sslContext(sslContext)) // Передаем SslContext
                 ))
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024)); //Увеличивает допустимый размер буфера в WebClient
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(100 * 1024 * 1024)); //Увеличивает допустимый размер буфера в WebClient
     }
 }

@@ -85,6 +85,7 @@
 
 <script>
   function submitPackage(type) {
+    console.log("Начало submitPackage, тип:", type); // ← Логируем начало функции
     const overlay = document.getElementById('loading-overlay');
     const downloadBtn = document.getElementById('download-btn');
     const errorMessage = document.getElementById('error-message');
@@ -102,11 +103,13 @@
     formData.append('startDate', document.querySelector('input[name="startDate"]').value);
     formData.append('endDate', document.querySelector('input[name="endDate"]').value);
 
+    console.log("Отправка запроса на /mis/package-query..."); // ← Логируем перед fetch
     fetch('/mis/package-query', {
       method: 'POST',
       body: formData
     })
             .then(async response => {
+              console.log("Получен ответ, статус:", response.status); // ← Логируем статус ответа
               if (!response.ok) {
                 // Сервер вернул ошибку (например, 400), но без тела
                 throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
@@ -114,17 +117,20 @@
               return response.json();
             })
             .then(data => {
+              console.log("Данные ответа:", data); // ← Логируем полученные данные
               // Если сервер вернул ошибку
               if (data.error) {
                 // Показываем ошибку на странице
                 errorMessage.textContent = "Ошибка запроса: " + data.error;
               } else if (data.hasData) {
+                console.log("Есть данные для скачивания, показываем кнопку"); // ← Логируем условие
                 downloadBtn.style.display = 'inline-block';
               }
               // Скрываем индикатор после показа кнопки
               overlay.style.display = 'none';
             })
             .catch(async error => {
+              console.error("Ошибка в submitPackage:", error); // ← Логируем ошибку
               overlay.style.display = 'none';
 
               let errorText = "Ошибка запроса";

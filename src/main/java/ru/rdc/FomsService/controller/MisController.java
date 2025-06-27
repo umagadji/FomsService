@@ -72,10 +72,12 @@ public class MisController {
                                                   @RequestParam String startDate,
                                                   @RequestParam String endDate) {
         Map<String, Object> responseData = new HashMap<>();
+        System.out.println("Начало обработки package-query, тип: " + type); // ← Логируем начало
 
         try {
             // Получаем данные из базы по переданным датам
             List<Item> items = misService.getOracleModels(startDate, endDate);
+            System.out.println("Получено items из базы: " + items.size()); // ← Логируем количество записей
 
             // Сохраняем связь между уникальными запросами и оригинальными Item
             Map<InsuranceRequest, Item> requestItemMap = new LinkedHashMap<>();
@@ -99,6 +101,8 @@ public class MisController {
                 requestItemMap.put(request, item);
             }
 
+            System.out.println("Уникальных запросов: " + requestItemMap.size()); // ← Логируем количество уникальных запросов
+
             // Присваиваем уникальные requestId и связываем с Item
             int requestId = 1;
             List<InsuranceRequest> insuranceRequestList = new ArrayList<>();
@@ -118,95 +122,37 @@ public class MisController {
             InsurancePackageRequest packageRequest = new InsurancePackageRequest();
             packageRequest.setInsuranceRequestList(insuranceRequestList);
 
+            System.out.println("Отправка запроса во внешний сервис..."); // ← Логируем перед вызовом сервиса
+
             // Получаем ответ от внешнего сервиса
             InsurancePackageResponse response = insurancePackageService.getPackageInsurance(packageRequest)
                     .onErrorReturn(new InsurancePackageResponse())
                     .block();
 
+            System.out.println("Ответ от сервиса получен, количество ответов: " +
+                    (response.getResponses() != null ? response.getResponses().size() : 0)); // ← Логируем ответ
+
             // Если есть ответ — сохраняем в Excel
             if (response.getResponses() != null && !response.getResponses().isEmpty()) {
                 File file = new File("response.xlsx");
+                System.out.println("Сохранение в Excel..."); // ← Логируем перед сохранением
                 excelExporter.saveToExcel(response.getResponses(), new ArrayList<>(requestItemMap.values()), file);
+                System.out.println("Файл Excel создан"); // ← Логируем успешное сохранение
             }
 
             responseData.put("hasData", response.getResponses() != null && !response.getResponses().isEmpty());
             responseData.put("downloadFile", "/mis/downloadFile");
 
         } catch (Exception e) {
+            System.err.println("Ошибка в handlePackageQuery: " + e.getMessage()); // ← Логируем ошибку
+            e.printStackTrace();
             responseData.put("error", "Ошибка запроса: " + e.getMessage());
         }
+
+        System.out.println("Возвращаемые данные: " + responseData); // ← Логируем финальный responseData
 
         return responseData;
     }
-
-    /*@PostMapping("/package-query")
-    @ResponseBody
-    public Map<String, Object> handlePackageQuery(@RequestParam String type,
-                                                  @RequestParam String startDate,
-                                                  @RequestParam String endDate) {
-        Map<String, Object> responseData = new HashMap<>();
-
-        try {
-            // Получаем данные из базы по переданным датам
-            List<Item> items = misService.getOracleModels(startDate, endDate);
-
-            // Используем Set для хранения уникальных запросов
-            Set<InsuranceRequest> uniqueRequests = new LinkedHashSet<>();
-
-            // Создаём уникальные запросы, в зависимости от типа запроса (по полисам или по ФИО)
-            for (Item item : items) {
-                InsuranceRequest request = new InsuranceRequest();
-                request.setRequestId(1);  // Временно присваиваем ID для запроса (в будущем это можно сделать уникальным)
-
-                if ("enp".equals(type)) {
-                    request.setEnp(item.getNpolis());  // Устанавливаем номер полиса
-                    request.setStype(1);  // Устанавливаем тип запроса для полисов
-                } else if ("fio".equals(type)) {
-                    request.setFam(item.getFam());  // Устанавливаем фамилию
-                    request.setIm(item.getIm());    // Устанавливаем имя
-                    request.setOt(item.getOt());    // Устанавливаем отчество
-                    request.setDr(convertDateFormat(item.getBirthDate()));  // Преобразуем дату рождения
-                    request.setStype(2);  // Устанавливаем тип запроса для ФИО
-                }
-
-                // Добавляем уникальный запрос в Set
-                uniqueRequests.add(request);
-            }
-
-            // Присваиваем уникальные ID для каждого запроса
-            int requestId = 1;
-            List<InsuranceRequest> insuranceRequestList = new ArrayList<>();
-            for (InsuranceRequest req : uniqueRequests) {
-                req.setRequestId(requestId++);
-                insuranceRequestList.add(req);
-            }
-
-            // Создаём объект запроса для пакета
-            InsurancePackageRequest packageRequest = new InsurancePackageRequest();
-            packageRequest.setInsuranceRequestList(insuranceRequestList);  // Добавляем список запросов
-
-            // Получаем ответ от внешнего сервиса
-            InsurancePackageResponse response = insurancePackageService.getPackageInsurance(packageRequest)
-                    .onErrorReturn(new InsurancePackageResponse())  // В случае ошибки возвращаем пустой ответ
-                    .block();  // Блокируем выполнение, пока не получим ответ от сервиса
-
-            // Если в ответе есть данные, сохраняем их в Excel-файл
-            if (response.getResponses() != null && !response.getResponses().isEmpty()) {
-                File file = new File("response.xlsx");
-                excelExporter.saveToExcel(response.getResponses(), items, file);
-            }
-
-            // Формируем ответ для клиента (JSON)
-            responseData.put("hasData", response.getResponses() != null && !response.getResponses().isEmpty());
-            responseData.put("downloadFile", "/mis/downloadFile");  // Путь для скачивания файла
-
-        } catch (Exception e) {
-            // В случае ошибки добавляем информацию об ошибке в ответ
-            responseData.put("error", "Ошибка запроса: " + e.getMessage());
-        }
-
-        return responseData;  // Возвращаем ответ в формате JSON
-    }*/
 
     // Метод для скачивания файла
     @GetMapping("/downloadFile")
