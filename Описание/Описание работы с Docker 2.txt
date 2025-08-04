@@ -1,0 +1,22 @@
+Для начала надо чтобы был установлен docker desktop
+1. Создаем dockerfile
+
+1. В папке с чатом открываем консоль и вводим команду: docker build -t fomsservice . (с точкой на конце) - Создаем образ docker контейнера. Это название fomsservice может быть любым
+2. Запуск докер контейнера: docker run -d --name fomsservice -p 8089:8088 --restart=always fomsservice (Или через докер десктоп). -d Означает запуск в фоновом режиме.
+3. Остановка контейнера: docker stop fomsservice
+4. Перезапуск контейнера: docker restart fomsservice
+5. Удалить контейнер: docker rm fomsservice
+
+В командах выше fomsservice - название контейнера, а fomsservice - название образа 
+--restart unless-stopped - контейнер будет перезапускаться автоматически, если он не был остановлен вручную.
+--restart always: Контейнер будет всегда запускаться при перезагрузке Docker или системы.
+--restart on-failure: Контейнер будет перезапущен только в случае ошибки.
+--restart no: (по умолчанию) — контейнер не будет перезапускаться автоматически.
+
+docker ps - Увидеть все запущенные контейнеры
+docker ps -a увидеть все запущенные контейнеры, даже те что выключены.
+
+Сохранить образ: docker save -o fomsservice.tar fomsservice
+Загрузить образ: docker load -i fomsservice.tar
+Посмотреть все образы: docker images
+Удалить образ: docker rmi fomsservice

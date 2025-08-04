@@ -74,7 +74,7 @@ public class ExcelExporter {
         }
 
         // Предварительная обработка данных
-        preprocessItems(items);
+        preprocessItems(items, responses);
 
         try (SXSSFWorkbook workbook = new SXSSFWorkbook(1000)) {
             workbook.setCompressTempFiles(true);  // Сжимать временные файлы (экономит место)
@@ -166,15 +166,38 @@ public class ExcelExporter {
         }
     }
 
-    private void preprocessItems(List<Item> items) {
+    private void preprocessItems(List<Item> items, List<InsuranceResponse> responses) {
+        Optional.ofNullable(items).ifPresent(list -> list.forEach(this::normalizeItem));
+        Optional.ofNullable(responses).ifPresent(list -> list.forEach(this::normalizeResponse));
+    }
+
+    private void normalizeItem(Item item) {
+        item.setFam(normalize(item.getFam()));
+        item.setIm(normalize(item.getIm()));
+        item.setOt(normalize(item.getOt()));
+    }
+
+    private void normalizeResponse(InsuranceResponse response) {
+        response.setFam(normalize(response.getFam()));
+        response.setIm(normalize(response.getIm()));
+        response.setOt(normalize(response.getOt()));
+    }
+
+    /*private void preprocessItems(List<Item> items, List<InsuranceResponse> responses) {
         if (items == null) return;
 
         items.forEach(item -> {
-            item.setFam(toUpperTrim(item.getFam()));
-            item.setIm(toUpperTrim(item.getIm()));
-            item.setOt(toUpperTrim(item.getOt()));
+            item.setFam(normalize(item.getFam()));
+            item.setIm(normalize(item.getIm()));
+            item.setOt(normalize(item.getOt()));
         });
-    }
+
+        responses.forEach(insuranceResponse -> {
+            insuranceResponse.setFam(normalize(insuranceResponse.getFam()));
+            insuranceResponse.setIm(normalize(insuranceResponse.getIm()));
+            insuranceResponse.setOt(normalize(insuranceResponse.getOt()));
+        });
+    }*/
 
     // Метод для заполнения строки данными
     private static void fillRowWithItemData(Row row, Item item, InsuranceResponse response, CellStyle style) {
@@ -243,9 +266,9 @@ public class ExcelExporter {
 
     // Проверка соответствия ФИО и даты рождения
     private static boolean isFioDrEqual(Item item, InsuranceResponse response) {
-        return Objects.equals(item.getFam(), response.getFam())
-                && Objects.equals(item.getIm(), response.getIm())
-                && Objects.equals(item.getOt(), response.getOt())
+        return normalize(item.getFam()).equals(normalize(response.getFam()))
+                && normalize(item.getIm()).equals(normalize(response.getIm()))
+                && normalize(item.getOt()).equals(normalize(response.getOt()))
                 && areDatesEqual(item.getBirthDate(), response.getDr());
     }
 
@@ -266,6 +289,11 @@ public class ExcelExporter {
             if (!areDatesEqual(item.getBirthDate(), response.getDr())) {
                 appendError(reasons, "Дата рождения");
             }
+
+            System.out.println(item.getFam() + " : " + response.getFam());
+            System.out.println(item.getIm() + " : " + response.getIm());
+            System.out.println(item.getOt() + " : " + response.getOt());
+            System.out.println(item.getBirthDate() + " : " + response.getDr());
         }
 
         if (!isPolicyEqual) {
@@ -280,7 +308,10 @@ public class ExcelExporter {
     }
 
     private static void appendIfNotEqual(StringBuilder sb, String fieldName, String value1, String value2) {
-        if (!Objects.equals(value1, value2)) {
+        String norm1 = normalize(value1);
+        String norm2 = normalize(value2);
+        if (!norm1.equals(norm2)) {
+            System.out.printf("Difference in %s: '%s' != '%s'%n", fieldName, norm1, norm2);
             appendError(sb, fieldName);
         }
     }
@@ -316,6 +347,12 @@ public class ExcelExporter {
     }
 
     private static String normalize(String value) {
-        return value == null ? "" : value.trim().replace("\u00A0", "").replaceAll("\\s+", "");
+        if (value == null) return "";
+        // Удаляем все пробелы, неразрывные пробелы, приводим к верхнему регистру
+        // И заменяем дефисы на пустую строку (или можно на пробел, если нужно сохранить разделение)
+        return value.trim()
+                .replace("\u00A0", "")
+                .replaceAll("[\\s-]+", "")
+                .toUpperCase();
     }
 }
