@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Работа с МЭК</title>
+  <title>Интеграция с ТФОМС - Работа с МЭК</title>
   <link rel="stylesheet" href="/css/styles.css"/>
   <link rel="stylesheet" href="/fontawesome/css/all.min.css"/>
   <script src="/js/table-sort.js"></script>
@@ -9,11 +9,11 @@
 <body>
 
 <div class="header">
-  <div class="logo"><a href="/insurance"><img src="/images/logo.svg"/></a></div>
+  <div class="logo"><a href="/"><img src="/images/logo.svg"/></a></div>
   <div class="title"><h2>Работа с МЭК</h2></div>
   <div class="mainmenu">
     <nav>
-      <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
+      <a href="/" th:classappend="${requestURI == '/' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
       <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}"><i class="fa-solid fa-scroll"></i> Работа с МЭК</a>
       <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}"><i class="fa-solid fa-database"></i> Работа с МИС</a>
     </nav>

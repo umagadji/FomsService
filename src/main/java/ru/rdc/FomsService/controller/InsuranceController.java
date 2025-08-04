@@ -11,7 +11,7 @@ import ru.rdc.FomsService.dto.InsuranceRequest;
 import ru.rdc.FomsService.service.InsuranceService;
 
 @Controller
-@RequestMapping("/insurance")
+@RequestMapping("/")
 public class InsuranceController {
 
     private final InsuranceService insuranceService;

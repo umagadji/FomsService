@@ -140,8 +140,9 @@ button:hover {
     max-height: 50px; /* Задайте подходящую высоту, если логотип слишком большой */
 }
 
-.header h2 {
+.header .title h2 {
     margin: 0;
+    text-align: center;
 }
 
 .colors_info {
@@ -176,39 +177,6 @@ button:hover {
 
 .smo-warning {
     background-color: #e0b3ff;
-}
-
-nav {
-    float: right;
-}
-nav a {
-    margin-left: 0px;
-    text-decoration: none;
-    font-weight: bold;
-    color: #fff;
-    background: #004e86;
-    padding: 10px;
-    border-radius: 8px;
-    -webkit-transition: all 0.2s ease-in-out 0s;
-    -moz-transition: all 0.2s ease-in-out 0s;
-    -o-transition: all 0.2s ease-in-out 0s;
-    -ms-transition: all 0.2s ease-in-out 0s;
-    transition: all 0.2s ease-in-out 0s;
-}
-
-nav a:hover {
-    color: #004e86;
-    background: #fff;
-    -webkit-transition: all 0.2s ease-in-out 0s;
-    -moz-transition: all 0.2s ease-in-out 0s;
-    -o-transition: all 0.2s ease-in-out 0s;
-    -ms-transition: all 0.2s ease-in-out 0s;
-    transition: all 0.2s ease-in-out 0s;
-}
-
-nav a.active {
-    color: #004e86;
-    background: #fff;
 }
 
 .btn_enp_request, .btn_fio_request, .btn_download_response {
@@ -261,8 +229,51 @@ nav a.active {
 }
 
 .header .logo, .header .title, .header .mainmenu {
-    flex: 1;
+    /*flex: 1;
+    display: flex;*/
+}
+
+.header .title {
+    flex-grow: 1;
+}
+
+.header .mainmenu {
+    margin-left: auto
+}
+
+.header .mainmenu nav {
     display: flex;
+    gap: 15px; /* отступ между пунктами меню */
+}
+
+.header .mainmenu nav a {
+    margin-left: 0px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #fff;
+    background: #004e86;
+    padding: 10px;
+    border-radius: 8px;
+    -webkit-transition: all 0.2s ease-in-out 0s;
+    -moz-transition: all 0.2s ease-in-out 0s;
+    -o-transition: all 0.2s ease-in-out 0s;
+    -ms-transition: all 0.2s ease-in-out 0s;
+    transition: all 0.2s ease-in-out 0s;
+}
+
+.header .mainmenu nav a:hover {
+    color: #004e86;
+    background: #fff;
+    -webkit-transition: all 0.2s ease-in-out 0s;
+    -moz-transition: all 0.2s ease-in-out 0s;
+    -o-transition: all 0.2s ease-in-out 0s;
+    -ms-transition: all 0.2s ease-in-out 0s;
+    transition: all 0.2s ease-in-out 0s;
+}
+
+.header .mainmenu nav a.active {
+    color: #004e86;
+    background: #fff;
 }
 
 #drop-area {

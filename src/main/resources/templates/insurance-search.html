@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Страхование</title>
+    <title>Интеграция с ТФОМС - Поиск страховой принадлежности</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/fontawesome/css/all.min.css"/>
 </head>
 <body>
-<div class="lenta_block"><img src="/images/lenta.png"/></div>
+<!--<div class="lenta_block"><img src="/images/lenta.png"/></div>-->
 <div class="header">
-    <div class="logo"><a href="/insurance"><img src="/images/logo.svg"/></a></div>
-    <div class="title"><h2>Поиск информации</h2></div>
+    <div class="logo"><a href="/"><img src="/images/logo.svg"/></a></div>
+    <div class="title"><h2>Поиск страховой принадлежности</h2></div>
     <div class="mainmenu">
         <nav>
-            <a href="/insurance" th:classappend="${requestURI == '/insurance' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
+            <a href="/" th:classappend="${requestURI == '/' ? ' active' : ''}"><i class="fa-solid fa-house"></i> Главная</a>
             <a href="/mek" th:classappend="${requestURI == '/mek' ? ' active' : ''}"><i class="fa-solid fa-scroll"></i> Работа с МЭК</a>
             <a href="/mis" th:classappend="${requestURI == '/mis' ? ' active' : ''}"><i class="fa-solid fa-database"></i> Работа с МИС</a>
         </nav>
@@ -21,7 +21,7 @@
 
 <div class="container">
     <div class="sidebar">
-        <form id="insuranceForm" th:action="@{/insurance/submit}" th:object="${insuranceRequest}" method="post">
+        <form id="insuranceForm" th:action="@{/submit}" th:object="${insuranceRequest}" method="post">
             <input type="hidden" name="requestId" th:value="1"> <!-- requestId всегда 1 -->
 
             <details open>
@@ -167,7 +167,7 @@
 
     // Функция для отправки запроса на сервер
     function sendRequest(requestData) {
-        fetch('/insurance/submit', {
+        fetch('/submit', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestData)
