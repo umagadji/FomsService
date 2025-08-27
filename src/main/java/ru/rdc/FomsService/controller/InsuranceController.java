@@ -38,12 +38,18 @@ public class InsuranceController {
 
         return insuranceService.getSingleInsurance(insuranceRequest)
                 .map(response -> ResponseEntity.ok(response)) // Успешный ответ
-                .onErrorResume(RuntimeException.class, e -> {
+                .onErrorResume(e -> {
+                    if (e.getMessage() != null && e.getMessage().contains("Ошибка 400")) {
+                        return Mono.just(ResponseEntity.badRequest().body("Ошибка 400: Неверные данные."));
+                    }
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка сервера. Вероятно сервисы ТФОМС недоступны"));
+                });
+                /*.onErrorResume(RuntimeException.class, e -> {
                     if (e.getMessage().contains("Ошибка 400")) {
                         return Mono.just(ResponseEntity.badRequest().body("Ошибка 400: Неверные данные."));
                     }
                     return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка сервера"));
-                });
+                });*/
     }
 }
 

@@ -17,6 +17,9 @@ public class InsurancePackageResponse {
     @JsonProperty("response")
     private List<InsuranceResponse> responses;
 
+    // Это поле будет для внутренних ошибок, в JSON оно тоже вернётся
+    private String errorMessage;
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

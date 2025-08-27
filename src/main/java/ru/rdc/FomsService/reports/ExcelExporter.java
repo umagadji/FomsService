@@ -33,6 +33,7 @@ public class ExcelExporter {
     private CellColorStyle redStyleParams;
     private CellColorStyle greenStyleParams;
     private CellColorStyle blueStyleParams;
+    private CellColorStyle purpleStyleParams;
 
     // Вспомогательные record-классы для хранения параметров стилей
     private record FontStyle(boolean bold, String fontName, short fontSize) {}
@@ -44,6 +45,7 @@ public class ExcelExporter {
         this.redStyleParams = new CellColorStyle(new java.awt.Color(255, 209, 209), HorizontalAlignment.LEFT);
         this.greenStyleParams = new CellColorStyle(new java.awt.Color(222, 255, 201), HorizontalAlignment.LEFT);
         this.blueStyleParams = new CellColorStyle(new java.awt.Color(173, 216, 230), HorizontalAlignment.LEFT);
+        this.purpleStyleParams = new CellColorStyle(new java.awt.Color(224, 179, 255), HorizontalAlignment.LEFT);
     }
 
     private CellStyle createHeaderStyle(Workbook workbook) {
@@ -84,6 +86,7 @@ public class ExcelExporter {
             CellStyle redStyle = createHighlightStyle(workbook, redStyleParams);
             CellStyle greenStyle = createHighlightStyle(workbook, greenStyleParams);
             CellStyle blueStyle = createHighlightStyle(workbook, blueStyleParams);
+            CellStyle purpleStyle = createHighlightStyle(workbook, purpleStyleParams);
 
             SXSSFSheet sheet = workbook.createSheet("Результаты");
 
@@ -136,11 +139,20 @@ public class ExcelExporter {
 
                     // Определяем стиль строки на основе проверок
                     CellStyle rowStyle;
-                    if (isFioDrEqual) {
+                    boolean smoHasText = response != null && hasText(response.getSmo());
+                    if (smoHasText && !"05501".equals(response.getSmo().trim())) {
+                        // СМО задано и оно не 05501 → фиолетовый
+                        rowStyle = purpleStyle;
+                    } else if (isFioDrEqual) {
                         rowStyle = isActive ? greenStyle : redStyle;
                     } else {
                         rowStyle = redStyle;
                     }
+                    /*if (isFioDrEqual) {
+                        rowStyle = isActive ? greenStyle : redStyle;
+                    } else {
+                        rowStyle = redStyle;
+                    }*/
 
                     // Заполняем строку данными
                     fillRowWithItemData(row, item, response, rowStyle);
@@ -182,22 +194,6 @@ public class ExcelExporter {
         response.setIm(normalize(response.getIm()));
         response.setOt(normalize(response.getOt()));
     }
-
-    /*private void preprocessItems(List<Item> items, List<InsuranceResponse> responses) {
-        if (items == null) return;
-
-        items.forEach(item -> {
-            item.setFam(normalize(item.getFam()));
-            item.setIm(normalize(item.getIm()));
-            item.setOt(normalize(item.getOt()));
-        });
-
-        responses.forEach(insuranceResponse -> {
-            insuranceResponse.setFam(normalize(insuranceResponse.getFam()));
-            insuranceResponse.setIm(normalize(insuranceResponse.getIm()));
-            insuranceResponse.setOt(normalize(insuranceResponse.getOt()));
-        });
-    }*/
 
     // Метод для заполнения строки данными
     private static void fillRowWithItemData(Row row, Item item, InsuranceResponse response, CellStyle style) {
@@ -344,6 +340,10 @@ public class ExcelExporter {
             sb.append(", ");
         }
         sb.append(error);
+    }
+
+    private static boolean hasText(String s) {
+        return s != null && !s.trim().isEmpty();
     }
 
     private static String normalize(String value) {

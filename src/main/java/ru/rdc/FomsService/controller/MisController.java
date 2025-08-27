@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 import ru.rdc.FomsService.dto.*;
 import ru.rdc.FomsService.reports.ExcelExporter;
 import ru.rdc.FomsService.service.InsurancePackageService;
@@ -124,7 +125,42 @@ public class MisController {
 
             System.out.println("Отправка запроса во внешний сервис..."); // ← Логируем перед вызовом сервиса
 
-            // Получаем ответ от внешнего сервиса
+            // Запрос во внешний сервис с обработкой ошибок
+            InsurancePackageResponse response = insurancePackageService.getPackageInsurance(packageRequest)
+                    .onErrorResume(e -> {
+                        String errorMsg = "Ошибка обращения к внешнему сервису: " + e.getMessage();
+                        System.err.println(errorMsg);
+                        InsurancePackageResponse errorResp = new InsurancePackageResponse();
+                        errorResp.setErrorMessage(errorMsg);
+                        return Mono.just(errorResp);
+                    })
+                    .block();
+
+            // Проверка на ошибку
+            if (response.getErrorMessage() != null) {
+                responseData.put("error", response.getErrorMessage());
+                return responseData;
+            }
+
+            // Проверка на наличие данных
+            if (response.getResponses() == null || response.getResponses().isEmpty()) {
+                responseData.put("error", "Ответ от внешнего сервиса пуст");
+                return responseData;
+            }
+
+            System.out.println("Ответ от сервиса получен, количество ответов: " +
+                    response.getResponses().size());
+
+            // Сохраняем в Excel
+            File file = new File("response.xlsx");
+            System.out.println("Сохранение в Excel...");
+            excelExporter.saveToExcel(response.getResponses(), new ArrayList<>(requestItemMap.values()), file);
+            System.out.println("Файл Excel создан");
+
+            responseData.put("hasData", true);
+            responseData.put("downloadFile", "/mis/downloadFile");
+
+            /*// Получаем ответ от внешнего сервиса
             InsurancePackageResponse response = insurancePackageService.getPackageInsurance(packageRequest)
                     .onErrorReturn(new InsurancePackageResponse())
                     .block();
@@ -141,12 +177,13 @@ public class MisController {
             }
 
             responseData.put("hasData", response.getResponses() != null && !response.getResponses().isEmpty());
-            responseData.put("downloadFile", "/mis/downloadFile");
+            responseData.put("downloadFile", "/mis/downloadFile");*/
 
         } catch (Exception e) {
-            System.err.println("Ошибка в handlePackageQuery: " + e.getMessage()); // ← Логируем ошибку
+            String errorMsg = "Ошибка в handlePackageQuery: " + e.getMessage(); // ← Логируем ошибку
+            System.err.println(errorMsg);
             e.printStackTrace();
-            responseData.put("error", "Ошибка запроса: " + e.getMessage());
+            responseData.put("error", errorMsg);
         }
 
         System.out.println("Возвращаемые данные: " + responseData); // ← Логируем финальный responseData

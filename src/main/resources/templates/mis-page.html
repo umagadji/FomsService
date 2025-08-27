@@ -85,12 +85,14 @@
 
 <script>
   function submitPackage(type) {
-    console.log("Начало submitPackage, тип:", type); // ← Логируем начало функции
+    console.log("Начало submitPackage, тип:", type);
+
     const overlay = document.getElementById('loading-overlay');
     const downloadBtn = document.getElementById('download-btn');
     const errorMessage = document.getElementById('error-message');
 
-    // Скрыть старое сообщение об ошибке
+    // Скрываем сообщение об ошибке в начале
+    errorMessage.style.display = 'none';
     errorMessage.textContent = '';
 
     // Показываем индикатор загрузки
@@ -98,84 +100,62 @@
     // Прячем кнопку скачивания на всякий случай
     downloadBtn.style.display = 'none';
 
+    // Формируем данные формы
     const formData = new FormData();
     formData.append('type', type);
     formData.append('startDate', document.querySelector('input[name="startDate"]').value);
     formData.append('endDate', document.querySelector('input[name="endDate"]').value);
 
-    console.log("Отправка запроса на /mis/package-query..."); // ← Логируем перед fetch
+    // Отправляем запрос
     fetch('/mis/package-query', {
       method: 'POST',
       body: formData
     })
             .then(async response => {
-              console.log("Получен ответ, статус:", response.status); // ← Логируем статус ответа
-              if (!response.ok) {
-                // Сервер вернул ошибку (например, 400), но без тела
-                throw new Error(`Ошибка ${response.status}: ${response.statusText}`);
+              console.log("Получен ответ, статус:", response.status);
+
+              // Пытаемся распарсить тело как JSON, даже если статус не 200
+              let data;
+              try {
+                data = await response.json();
+              } catch (e) {
+                data = null;
               }
-              return response.json();
+
+              if (!response.ok) {
+                // Если бэк вернул ошибку и в теле есть сообщение
+                const errText = data?.error || data?.message || response.statusText || "Неизвестная ошибка";
+                throw new Error(errText);
+              }
+
+              return data;
             })
             .then(data => {
-              console.log("Данные ответа:", data); // ← Логируем полученные данные
-              // Если сервер вернул ошибку
+              console.log("Данные ответа:", data);
+
               if (data.error) {
-                // Показываем ошибку на странице
+                // Сервер вернул JSON с полем error — показываем
                 errorMessage.textContent = "Ошибка запроса: " + data.error;
+                errorMessage.style.display = 'block';
               } else if (data.hasData) {
-                console.log("Есть данные для скачивания, показываем кнопку"); // ← Логируем условие
+                // Всё ок — показываем кнопку скачивания
                 downloadBtn.style.display = 'inline-block';
+              } else {
+                // Не ошибка, но и данных нет
+                errorMessage.textContent = "Данные не найдены";
+                errorMessage.style.display = 'block';
               }
-              // Скрываем индикатор после показа кнопки
-              overlay.style.display = 'none';
             })
-            .catch(async error => {
-              console.error("Ошибка в submitPackage:", error); // ← Логируем ошибку
+            .catch(error => {
+              // Любая ошибка попадает сюда
+              console.error("Ошибка в submitPackage:", error);
+              errorMessage.textContent = "Ошибка запроса: " + error.message;
+              errorMessage.style.display = 'block';
+            })
+            .finally(() => {
+              // Скрываем индикатор в любом случае
               overlay.style.display = 'none';
-
-              let errorText = "Ошибка запроса";
-
-              if (error instanceof Response) {
-                try {
-                  const errorData = await error.json();
-                  errorText += ": " + (errorData.message || errorData.error || error.statusText);
-                } catch (e) {
-                  const text = await error.text();
-                  errorText += ": " + (text || error.statusText);
-                }
-              } else if (error instanceof Error) {
-                errorText += ": " + error.message;
-              } else {
-                errorText += ": Неизвестная ошибка";
-              }
-
-              errorMessage.textContent = errorText;
-              console.error("Ошибка выполнения запроса:", error);
             });
-            /*.catch(async error => {
-              overlay.style.display = 'none';
-
-              console.error("Catch block error object:", error);
-
-              if (error instanceof Response) {
-                const text = await error.text(); // Попробуем получить текст из ответа
-                console.error("Ответ от сервера:", text);
-
-                // Если ответ пустой или нет текстового содержимого, покажем статус
-                if (!text) {
-                  errorMessage.textContent = "Ошибка запроса: " + error.statusText;
-                } else {
-                  // Если текст есть, покажем его в сообщении об ошибке
-                  errorMessage.textContent = "Ошибка запроса: " + text;
-                }
-              } else if (error instanceof Error) {
-                console.error("Ошибка выполнения запроса:", error.message);
-                errorMessage.textContent = "Ошибка выполнения запроса: " + error.message;
-              } else {
-                console.error("Неизвестная ошибка:", error);
-                errorMessage.textContent = "Произошла неизвестная ошибка";
-              }
-            });*/
   }
 
   function loadItems(event) {
