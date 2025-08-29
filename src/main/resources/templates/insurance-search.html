@@ -4,6 +4,7 @@
     <title>Интеграция с ТФОМС - Поиск страховой принадлежности</title>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/fontawesome/css/all.min.css"/>
+    <script th:src="@{/js/lottie-player.js}"></script>
 </head>
 <body>
 <!--<div class="lenta_block"><img src="/images/lenta.png"/></div>-->
@@ -84,6 +85,18 @@
                 <span class="police_other">Другой полис</span>
                 <span class="police_no_data">Нет данных</span>
                 <span class="police_inogor">Иногородний</span>
+            </div>
+
+
+            <div class="animation_wrapper">
+                <lottie-player
+                        th:src="@{/animations/health_insurance.json}"
+                        background="transparent"
+                        speed="1"
+                        style="max-width: 300px;"
+                        loop
+                        autoplay>
+                </lottie-player>
             </div>
         </form>
     </div>

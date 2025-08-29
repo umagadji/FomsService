@@ -417,3 +417,8 @@ button:hover {
     right: 0px;
     z-index: 1;
 }
+
+.animation_wrapper {
+    justify-content: center !important;
+    display: flex !important;
+}
